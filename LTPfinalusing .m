@@ -1,25 +1,25 @@
 
-%Êı¾İ¶ÁÈ¡²¿·Ö
- [fname,pname] = uigetfile('*.plx');
+%---- Data Reading ----
+ [fname,pname] = uigetfile('*.plx'); 
  file = [pname,fname];
- channal='ÇëÊäÈë·ÖÎöµÄÍ¨µÀ';
+ channal='è¯·è¾“å…¥åˆ†æçš„é€šé“';
  channal= char(inputdlg(channal));
- eventnum='ÇëÊäÈë·ÖÎö²Î¿¼µÄÊÂ¼ş';
+ eventnum='è¯·è¾“å…¥åˆ†æå‚è€ƒçš„äº‹ä»¶';
  eventnum= char(inputdlg(eventnum));
  [adfreq, n, ts, fn, ad] = plx_ad(file, channal);
  [n, events, sv] = plx_event_ts(file,eventnum);
- %Event = PL2EventTs(file,eventnum);
+ %Event = PL2EventTs(file,eventnum); for pl2-format file
  pre=0.01;
  post=0.02;                                                                                                                                                    
  t=length(ad)/adfreq;
  time_step = 1/adfreq;
- timestamp=ts:time_step:t;
+ timestamp = ts:time_step:t;
  data=filter(WB,ad);
  %data=ad;
- %¼ì²éÒ»ÏÂeventµÄÊ±¼äµã£¡£¡£¡
+ %æ£€æŸ¥ä¸€ä¸‹eventçš„æ—¶é—´ç‚¹ï¼ï¼ï¼
  norm = zeros(1200,length(events));
 
-%
+%---- Extract signals around events ---- 
 for i=1:length(events)
 aligneddata{i}=data(find(timestamp<events(i)+post & timestamp>(events(i)-pre)));
 nor_data{i}=aligneddata{i}-mean(aligneddata{i}(1:post/time_step));
@@ -36,7 +36,8 @@ end
  average_baselinea=mean(norm,2);
  plot(average_baselinea,'g','LineWidth',2);
  hold on
- 
+
+%---- Exclude artifacts from raw data ----
 n=1;
 for i=1:length(norm(1,:))
 plot(norm(:,i),'k')
@@ -48,7 +49,8 @@ n=n+1;
 end
 end
 
-norm1=new;%%**×¢ÒâĞŞ¸Ä 
+%---- Detect markers ----
+norm1=new;%%**æ³¨æ„ä¿®æ”¹ 
  average_baseline=mean(norm1,2);
  plot(average_baseline,'b','LineWidth',2);
 norm=norm1;
@@ -61,10 +63,11 @@ for m=1:floor(size(norm,2)/4)
         hold on
         datax(:,(n-(m-1)*4))=norm(:,n);
     end
+    
    average_data=mean(datax,2);
    plot(average_data,'r','LineWidth',2);
     a=0.004;
-        b=0.009;
+    b=0.009;
         part=average_data((pre+a)/time_step:(pre+b)/time_step);
 
         [Minvalue,IndMin]=min(part);
@@ -80,6 +83,7 @@ for m=1:floor(size(norm,2)/4)
         display(Ind);
 end
 
+%---- Data Processing ----
 for m=1:floor(size(norm,2)/4)
     figure
     for n=((m-1)*4+1):m*4
@@ -89,12 +93,12 @@ for m=1:floor(size(norm,2)/4)
     end
    average_data=mean(datax,2);
    plot(average_data,'r','LineWidth',2);
-     a=0.0035;
-        b=0.009;
+     a=0.0035;%User-defined
+        b=0.009;%User-defined
         part=average_data((pre+a)/time_step:(pre+b)/time_step);
-%         IndMin=find(diff(sign(diff(part)))>0)+1;%»ñµÃ¾Ö²¿×îĞ¡ÖµµÄÎ»ÖÃ
+       % IndMin=find(diff(sign(diff(part)))>0)+1;%è·å¾—å±€éƒ¨æœ€å°å€¼çš„ä½ç½®
         [Minvalue,IndMin]=min(part);
-        IndMax=find(diff(sign(diff(part)))~=0)+1;%»ñµÃ¾Ö²¿×î´óÖµµÄÎ»ÖÃ
+        IndMax=find(diff(sign(diff(part)))~=0)+1;%è·å¾—å±€éƒ¨æœ€å¤§å€¼çš„ä½ç½®
         Ind=find(diff(sign(diff(diff(part))))~=0)+2;
         hold on;
         x=(pre+a)/time_step;
@@ -103,11 +107,11 @@ for m=1:floor(size(norm,2)/4)
          plot(Ind+x,part(Ind),'b^')
         display(IndMax);
         display(Ind);
-        spot1='µÚÒ»¸öµã';
+        spot1='ç¬¬ä¸€ä¸ªç‚¹';
         spot1=str2num(char(inputdlg(spot1)));
-        spot2='µÚ¶ş¸öµã';
+        spot2='ç¬¬äºŒä¸ªç‚¹';
         spot2=str2num(char(inputdlg(spot2)));
-        spot3='µÚÈı¸öµã';
+        spot3='ç¬¬ä¸‰ä¸ªç‚¹';
         spot3=str2num(char(inputdlg(spot3)));
         %spot3=max(IndMin);
         y1=part(spot1);
@@ -137,11 +141,7 @@ p=[k' L' LK' MK' y' A' B'];
  
  
 
-norm=norm(:,145:224);
-average_baseline1=mean(norm,2);
-plot(average_baseline1,'b','LineWidth',2);
-hold on
-plot(average_baseline,'r','LineWidth',2);
 
    
+
    
